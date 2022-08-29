@@ -42,15 +42,9 @@ export const PhoneFrom = () => {
 		} catch (error) {
 			console.log(error);
 		}
-
-		// alert('submit');
 	};
 
-	// console.log(mydata ? mydata.data.data.userToken : '', 'i usertoken');
-	// console.log(mydata ? mydata.data.status : '', 'i am sta');
-	// console.log(apiData ? apiData.data.message : '', 'i am message');
 
-	// return is start
 	return (
 		<div>
 			<form action="" method="post" onSubmit={SubmitFunction}>
