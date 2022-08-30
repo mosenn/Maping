@@ -1,41 +1,95 @@
-import React from 'react';
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
-
-import 'leaflet/dist/leaflet.css';
+import { useState, useEffect } from 'react';
+import { Marker, MapContainer, TileLayer, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Icon } from 'leaflet';
+import tileLayer from '../../tileLayer';
 
-import './style.css';
+const center = [29.591768, 52.583698];
 
-export default function Mapingtest() {
+const removeMarker = (index, map, legend) => {
+	map.eachLayer((layer) => {
+		if (layer.options && layer.options.pane === 'markerPane') {
+			if (layer.options.uniceid === index) {
+				map.removeLayer(layer);
+				legend.textContent = 'goodbye marker 💩';
+			}
+		}
+	});
+};
 
+const ShowMarkers = ({ mapContainer, legend, markers }) => {
+	return markers.map((marker, index) => {
+		return (
+			<Marker
+				key={index}
+				uniceid={index}
+				position={marker}
+				draggable={true}
+				eventHandlers={{
+					moveend(e) {
+						const { lat, lng } = e.target.getLatLng();
+						legend.textContent = `change position: ${lat} ${lng}`;
+					},
+				}}
+			>
+				<Popup>
+					<button
+						onClick={() =>
+							removeMarker(index, mapContainer, legend)
+						}
+					>
+						delete marker 💔
+					</button>
+				</Popup>
+			</Marker>
+		);
+	});
+};
 
+const MyMarkers = ({ map }) => {
+	const [marker, setMarker] = useState([]);
+	const [legend, setLegend] = useState();
+
+	useEffect(() => {
+		if (!map) return;
+		const legend = L.control({ position: 'bottomleft' });
+
+		const info = L.DomUtil.create('div', 'legend');
+
+		legend.onAdd = () => {
+			info.textContent = `click on the map, move the marker, click on the marker`;
+			return info;
+		};
+
+		legend.addTo(map);
+
+		map.on('click', (e) => {
+			const { lat, lng } = e.latlng;
+			setMarker((mar) => [...mar, [lat, lng]]);
+
+			info.textContent = `new marker: ${e.latlng}`;
+			setLegend(info);
+		});
+	}, [map]);
+
+	return marker.length > 0 && legend !== undefined ? (
+		<ShowMarkers mapContainer={map} legend={legend} markers={marker} />
+	) : null;
+};
+
+const MapWrapper = () => {
+	const [map, setMap] = useState(null);
 	return (
 		<MapContainer
-			center={[50.5, 30.5]}
-			zoom={13}
-			style={{ height: '100vh' }}
-			// whenReady={(map) => {
-			//   console.log(map);
-			//   map.target.on("click", function (e) {
-			//     const { lat, lng } = e.latlng;
-			//     L.marker([lat, lng], { Icon }).addTo(map.target);
-			//   });
-			// }}
+			whenCreated={setMap}
+			center={center}
+			zoom={18}
+			scrollWheelZoom={false}
 		>
-			<TileLayer
-				attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-				url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-			/>
+			<TileLayer {...tileLayer} />
 
-			{/* {(map) => {
-				console.log('map center:', map.getCenter());
-				map.on('click', function (e) {
-					const { lat, lng } = e.latlng;
-					L.marker([lat, lng], { Icon }).addTo(map);
-				});
-				return null;
-			}} */}
+			<MyMarkers map={map} />
 		</MapContainer>
 	);
-}
+};
+
+export default MapWrapper;

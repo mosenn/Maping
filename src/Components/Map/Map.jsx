@@ -1,20 +1,27 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ShowVechiles } from '../../slices/SearchQueryApi';
+import axios from 'axios';
 import { Icon } from 'leaflet';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import './style.css';
-import Mapingtest from '../test/test';
+import MapWrapper from '../test/test';
 
 export const Map = () => {
+	//------------------------------------------------ ALL STATE THIS COMPONTENT
 	const [lt, setLat] = useState();
-	console.log('lt', lt);
-
+	// console.log('lt', lt);
+	const [lg, setLng] = useState();
+	const [showSubmitbtnData, setShowSubmitbtnData] = useState(true);
+	console.log('lat and lng', lg, lt);
 	const state = useSelector((state) => state);
 	const [TakeMassage, setTakeMassage] = useState();
 	const [getNameVechiles, setGetNameVechiles] = useState([]);
+	const [takeIDVechiles, setTAkeIDVechiles] = useState();
 	const data = state.PostingUsers.value.data;
+
+	//
 	let userToken = '92d15c07';
 	// let userToken;
 	if (data.length !== 0) {
@@ -22,6 +29,27 @@ export const Map = () => {
 	}
 	// console.log('here', getNameVechiles);
 	const dispatch = useDispatch();
+
+	// posting user data
+	const urlUserDAtaPost =
+		'https://exam.pishgamanasia.com/webapi/Request/SendRequest';
+
+	const postinguserDAta = async (lt, lg, id) => {
+		console.log('data lt lg in function', lt, lg);
+
+		try {
+			const resp = await axios.post(urlUserDAtaPost, {
+				userToken: userToken,
+				vehicleUserTypeId: id,
+				source: JSON.stringify(lt),
+				destination: JSON.stringify(lg),
+			});
+			console.log('postinDAta', resp);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	const [query, setQuery] = useState();
 
 	const SearchQuery = async (e) => {
@@ -43,6 +71,7 @@ export const Map = () => {
 			setTakeMassage({
 				Message: message,
 				Status: status,
+				VhData: getData.data,
 			});
 		} else {
 			setTakeMassage({
@@ -52,10 +81,14 @@ export const Map = () => {
 	};
 
 	//
+	const HandalerSubmitLatLng = (e) => {
+		e.preventDefault();
+		console.log('id_VH', TakeMassage.VhData[0].id);
+		postinguserDAta(lt, lg, TakeMassage.VhData[0].id);
+	};
 
-	// Draggable Function Marker map
+	//----------------------------------------------------------- Draggable Function Marker map
 
-	// daraging marker
 	const center = {
 		lat: 51.505,
 		lng: -0.09,
@@ -86,6 +119,19 @@ export const Map = () => {
 		iconSize: [25, 25],
 	});
 	let markerlength = 0;
+
+	//
+	let Dimoned = L.icon({
+		iconUrl: '/public/marker1.png',
+		iconSize: [50, 50], // size of the icon
+	});
+	let MArker2 = L.icon({
+		iconUrl: '/public/marker2.png',
+		iconSize: [50, 50], // size of the icon
+	});
+
+	//
+
 	return (
 		<section>
 			<h1>Maping</h1>
@@ -108,8 +154,9 @@ export const Map = () => {
 			)}
 			{getNameVechiles &&
 				getNameVechiles.map((items) => {
-					console.log(items);
+					// console.log(items);
 					const { name, id } = items;
+
 					return (
 						<section>
 							<div key={id}>
@@ -123,8 +170,18 @@ export const Map = () => {
 					);
 				})}
 
-			{/*---------------------------------------------------------- map */}
+			{/*---------------------------------------------------------- Map */}
 
+			<form action="" onSubmit={HandalerSubmitLatLng}>
+				<button
+					type="submit"
+					disabled={showSubmitbtnData}
+					// disabled={true}
+				>
+					ثبت مبدا و مقصد
+				</button>
+			</form>
+			<button type=""></button>
 			<MapContainer
 				whenReady={(map) => {
 					// console.log(map);
@@ -132,13 +189,19 @@ export const Map = () => {
 						const { lat, lng } = e.latlng;
 						markerlength++;
 						// console.log('latlang', lat, lng);
+						if (markerlength === 2) {
+							setShowSubmitbtnData(!showSubmitbtnData);
+						}
 						if (markerlength <= 2) {
 							L.marker([lat, lng], {
-								draggable: true,
+								draggable: [console.log([lat, lng], true)],
 								autoPan: false,
+								icon: markerlength === 1 ? Dimoned : MArker2,
 							}).addTo(map.target);
 							setLat(lat); // in bayd post konam data
+							setLng(lng);
 						}
+						L.marker;
 
 						console.log(markerlength, 'markerlength');
 					});
@@ -174,10 +237,18 @@ export const Map = () => {
 						</span>
 					</Popup>
 				</Marker>
+
+				<Marker
+					position={[29.585924456479244, 52.583698]}
+					eventHandlers={{
+						click: (e) => {
+							console.log('marker clicked', e);
+						},
+					}}
+				/>
 			</MapContainer>
 
-			{/* 
-			<Mapingtest></Mapingtest> */}
+			{/* <MapWrapper></MapWrapper> */}
 		</section>
 	);
 };
