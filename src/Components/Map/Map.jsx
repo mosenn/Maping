@@ -1,12 +1,9 @@
-import React, { useState, useRef, useMemo, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ShowVechiles } from '../../slices/SearchQueryApi';
 import axios from 'axios';
-import { Icon } from 'leaflet';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import './style.css';
-import MapWrapper from '../test/test';
 
 export const Map = () => {
 	//------------------------------------------------ ALL STATE THIS COMPONTENT
@@ -19,6 +16,8 @@ export const Map = () => {
 	const [TakeMassage, setTakeMassage] = useState();
 	const [getNameVechiles, setGetNameVechiles] = useState([]);
 	const [takeIDVechiles, setTAkeIDVechiles] = useState();
+	const [conditionCheckbox, setConditionCheckbox] = useState();
+	const [Radio, Setradio] = useState();
 	const data = state.PostingUsers.value.data;
 
 	//
@@ -83,44 +82,15 @@ export const Map = () => {
 	//
 	const HandalerSubmitLatLng = (e) => {
 		e.preventDefault();
-		console.log('id_VH', TakeMassage.VhData[0].id);
+		// console.log('id_VH', TakeMassage.VhData[0].id);
 		postinguserDAta(lt, lg, TakeMassage.VhData[0].id);
 	};
 
 	//----------------------------------------------------------- Draggable Function Marker map
 
-	const center = {
-		lat: 51.505,
-		lng: -0.09,
-	};
-	const [draggable, setDraggable] = useState(false);
-	const [position, setPosition] = useState(center);
-	const markerRef = useRef(null);
-	const eventHandlers = useMemo(
-		() => ({
-			dragend() {
-				const marker = markerRef.current;
-				if (marker != null) {
-					setPosition(marker.getLatLng());
-					// console.log(marker.getLatLng());
-				}
-			},
-		}),
-		[]
-	);
-	const toggleDraggable = useCallback(() => {
-		setDraggable((d) => !d);
-	}, []);
-
-	//change icons marker
-
-	const MarkerIcons = new Icon({
-		iconUrl: '/public/marker1.png',
-		iconSize: [25, 25],
-	});
-	let markerlength = 0;
-
 	//
+
+	let markerlength = 0;
 	let Dimoned = L.icon({
 		iconUrl: '/public/marker1.png',
 		iconSize: [50, 50], // size of the icon
@@ -131,6 +101,40 @@ export const Map = () => {
 	});
 
 	//
+	const CheckBoxHandeler = (e) => {
+		console.log('checkbox', e.target.checked);
+		let checkboxValue = e.target.checked;
+		setConditionCheckbox(e.target.checked);
+		if (conditionCheckbox === true) {
+			console.log('trueeee');
+		}
+	};
+	const CloseVchiles = (id) => {
+		if (getNameVechiles) {
+			let deletingVchiles = getNameVechiles.filter(
+				(data) => data.id !== id
+			);
+			setGetNameVechiles(deletingVchiles);
+
+			// console.log('id in function ', id);
+			// console.log('data in function close', getNameVechiles[0].id);
+		}
+		window.location.reload();
+	};
+
+	const uniqueIdsVh = [];
+
+	const uniqueVHichels = getNameVechiles.filter((element) => {
+		const VhisDuplicate = uniqueIdsVh.includes(element.id);
+
+		if (!VhisDuplicate) {
+			uniqueIdsVh.push(element.id);
+
+			return true;
+		}
+
+		return false;
+	});
 
 	return (
 		<section>
@@ -153,102 +157,97 @@ export const Map = () => {
 				</section>
 			)}
 			{getNameVechiles &&
-				getNameVechiles.map((items) => {
-					// console.log(items);
+				// [...new Set(array)]
+
+				uniqueVHichels.map((items) => {
 					const { name, id } = items;
 
 					return (
 						<section>
 							<div key={id}>
 								<h3>{name}</h3>
-								<input type="checkbox" />
-								<label htmlFor="">
-									مایل هستید با این وسیله نقلیه جابه جای شید
-								</label>
+
+								<button
+									onClick={() => {
+										CloseVchiles(id);
+									}}
+								>
+									Close
+								</button>
 							</div>
 						</section>
 					);
+
+					// console.log(items);
+					// [...new Set(getNameVechiles)];
 				})}
 
 			{/*---------------------------------------------------------- Map */}
+			{/* submit lat and lng  */}
 
-			<form action="" onSubmit={HandalerSubmitLatLng}>
-				<button
-					type="submit"
-					disabled={showSubmitbtnData}
-					// disabled={true}
-				>
-					ثبت مبدا و مقصد
-				</button>
-			</form>
-			<button type=""></button>
-			<MapContainer
-				whenReady={(map) => {
-					// console.log(map);
-					map.target.on('click', function (e) {
-						const { lat, lng } = e.latlng;
-						markerlength++;
-						// console.log('latlang', lat, lng);
-						if (markerlength === 2) {
-							setShowSubmitbtnData(!showSubmitbtnData);
-						}
-						if (markerlength <= 2) {
-							L.marker([lat, lng], {
-								draggable: [console.log([lat, lng], true)],
-								autoPan: false,
-								icon: markerlength === 1 ? Dimoned : MArker2,
-							}).addTo(map.target);
-							setLat(lat); // in bayd post konam data
-							setLng(lng);
-						}
-						L.marker;
-
-						console.log(markerlength, 'markerlength');
-					});
-				}}
-				center={{ lat: 29.591768, lng: 52.583698 }}
-				zoom={13}
-				scrollWheelZoom={false}
-			>
-				<TileLayer
-					attribution='&copy; <a href="https://map.pishgamanasia.ir">OpenStreetMap</a> contributors'
-					url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-				/>
-
-				<Marker
-					icon={MarkerIcons}
-					// position={([29.591768, 52.583698], [29.59179, 52.58365])}
-					position={[29.585924456479244, 52.583698]}
-					draggable={draggable}
-					eventHandlers={eventHandlers}
-					ref={markerRef}
-				>
-					<Popup>
-						A pretty CSS3 popup. <br /> Easily customizable.
-						<span
-							onClick={toggleDraggable}
-							style={{
-								color: 'red',
-							}}
+			{getNameVechiles.length !== 0 ? (
+				<section>
+					<form action="" onSubmit={HandalerSubmitLatLng}>
+						<button
+							type="submit"
+							disabled={showSubmitbtnData}
+							// disabled={true}
 						>
-							{draggable
-								? 'Marker is draggable'
-								: 'Click here to make marker draggable'}
-						</span>
-					</Popup>
-				</Marker>
+							ثبت مبدا و مقصد
+						</button>
+					</form>
+					<MapContainer
+						whenReady={(map) => {
+							map.target.on('click', function (e) {
+								const { lat, lng } = e.latlng;
+								markerlength++;
+								// console.log('latlang', lat, lng);
+								if (
+									markerlength === 2 &&
+									getNameVechiles.length !== 0
+								) {
+									setShowSubmitbtnData(!showSubmitbtnData);
+								}
 
-				<Marker
-					position={[29.585924456479244, 52.583698]}
-					eventHandlers={{
-						click: (e) => {
-							console.log('marker clicked', e);
-						},
-					}}
-				/>
-			</MapContainer>
+								if (
+									markerlength <= 2 &&
+									getNameVechiles.length !== 0
+								) {
+									L.marker([lat, lng], {
+										draggable: [
+											console.log([lat, lng], true),
+										],
+										autoPan: false,
+										icon:
+											markerlength === 1
+												? Dimoned
+												: MArker2,
+									}).addTo(map.target);
+									setLat(lat); // in bayd post konam data
+									setLng(lng);
+								}
+								L.marker;
 
-			{/* <MapWrapper></MapWrapper> */}
+								console.log(markerlength, 'markerlength');
+							});
+
+							// console.log(map);
+						}}
+						center={{ lat: 29.591768, lng: 52.583698 }}
+						zoom={13}
+						scrollWheelZoom={false}
+					>
+						<TileLayer
+							attribution='&copy; <a href="https://map.pishgamanasia.ir">OpenStreetMap</a> contributors'
+							url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+						/>
+					</MapContainer>
+				</section>
+			) : (
+				<div>
+					<h1>لطفا یک سروی سرچ و انتخاب کنید</h1>
+				</div>
+			)}
 		</section>
 	);
 };
