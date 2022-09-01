@@ -10,6 +10,8 @@ export const Map = () => {
 	const [lt, setLat] = useState();
 	// console.log('lt', lt);
 	const [lg, setLng] = useState();
+	const [printlatlng, setPrintlatlng] = useState([]);
+	console.log(printlatlng, 'printlatlang');
 	const [showSubmitbtnData, setShowSubmitbtnData] = useState(true);
 	console.log('lat and lng', lg, lt);
 	const state = useSelector((state) => state);
@@ -163,8 +165,8 @@ export const Map = () => {
 					const { name, id } = items;
 
 					return (
-						<section>
-							<div key={id}>
+						<section key={id}>
+							<div>
 								<h3>{name}</h3>
 
 								<button
@@ -196,10 +198,32 @@ export const Map = () => {
 							ثبت مبدا و مقصد
 						</button>
 					</form>
+					<div>
+						<div>
+							<span>مبدا</span>
+							<span style={{ padding: '2px', margin: '5px' }}>
+								{printlatlng[0]}
+							</span>
+
+							<span style={{ padding: '2px', margin: '5px' }}>
+								{printlatlng[1]}
+							</span>
+						</div>
+						<div>
+							<span>مقصد</span>
+							<span style={{ padding: '2px', margin: '5px' }}>
+								{printlatlng[2]}
+							</span>
+							<span style={{ padding: '2px', margin: '5px' }}>
+								{printlatlng[3]}
+							</span>
+						</div>
+					</div>
 					<MapContainer
 						whenReady={(map) => {
 							map.target.on('click', function (e) {
 								const { lat, lng } = e.latlng;
+
 								markerlength++;
 								// console.log('latlang', lat, lng);
 								if (
@@ -216,6 +240,7 @@ export const Map = () => {
 									L.marker([lat, lng], {
 										draggable: [
 											console.log([lat, lng], true),
+											printlatlng.push(lat, lng),
 										],
 										autoPan: false,
 										icon:
@@ -223,6 +248,7 @@ export const Map = () => {
 												? Dimoned
 												: MArker2,
 									}).addTo(map.target);
+
 									setLat(lat); // in bayd post konam data
 									setLng(lng);
 								}
