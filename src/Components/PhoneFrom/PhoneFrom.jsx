@@ -11,6 +11,7 @@ export const PhoneFrom = () => {
 	let InpPhoneValue = useRef();
 	const [apiData, SetData] = useState();
 	const [takeValues, SetTakeValues] = useState();
+
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 
@@ -31,7 +32,6 @@ export const PhoneFrom = () => {
 			});
 			console.log(resp);
 			SetData(resp);
-
 			dispatch(SendData(resp.data)); // send user token and other !
 
 			if (resp.data.data.userToken !== null) {
@@ -43,7 +43,6 @@ export const PhoneFrom = () => {
 			console.log(error);
 		}
 	};
-
 
 	return (
 		<div>

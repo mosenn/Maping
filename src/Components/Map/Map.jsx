@@ -24,19 +24,20 @@ export const Map = () => {
 		(state) => state.showingbtn.value.showbtn
 	);
 	//
-	let userToken = '92d15c07';
-	// let userToken;
+	let userToken;
+
 	if (data.length !== 0) {
-		// userToken = state.PostingUsers.value.data.data.userToken;
+		userToken = state.PostingUsers.value.data.data.userToken;
 	}
-	// console.log('here', getNameVechiles);
 
 	// posting user data
+	// window.localStorage.setItem('userToken', userToken);
+
 	const urlUserDAtaPost =
 		'https://exam.pishgamanasia.com/webapi/Request/SendRequest';
 
 	const postinguserDAta = async (lat, lng, id) => {
-		console.log('data lt lg in function', lat, lng);
+		// console.log('data lt lg in function', lat, lng);
 
 		try {
 			const resp = await axios.post(urlUserDAtaPost, {
@@ -51,6 +52,7 @@ export const Map = () => {
 		}
 	};
 
+	// valid serach input
 	const SearchQuery = async (e) => {
 		let valid;
 		if (/^\s/.test(e.target.value)) {
@@ -72,6 +74,9 @@ export const Map = () => {
 
 	const HandelerSubmit = async (e) => {
 		e.preventDefault();
+		if (serchinpt.current.value == '') {
+			setValidate('لطفا نوع وسیله نقیله خود را سرچ کنید');
+		}
 		if (userToken && !serchinpt.current.value == '') {
 			setShowMessage(true);
 			const resp = await fetch(
@@ -86,13 +91,14 @@ export const Map = () => {
 			setTakeMassage({
 				Status: status,
 				VhData: getData.data,
+				Message: message,
 			});
 
-			if (data.length !== 0) {
+			if (data.length === 0) {
 				setTakeMassage({
-					Message: message,
+					Message: 'وسیله نقیله شما موجود نمی باشد',
 				});
-				console.log('in the if', TakeMassage.Message);
+				// console.log('in the if', TakeMassage.Message);
 			}
 		}
 	};
@@ -112,9 +118,11 @@ export const Map = () => {
 			// console.log('id in function ', id);
 			// console.log('data in function close', getNameVechiles[0].id);
 		}
+
 		window.location.reload();
 	};
-
+	// const testgetToken = window.sessionStorage.getItem('userToken');
+	// console.log(testgetToken);
 	// contorl dublicate map
 	const uniqueIdsVh = [];
 
@@ -184,7 +192,7 @@ export const Map = () => {
 				})}
 
 			{/*---------------------------------------------------------- Map */}
-	
+
 			{/* map and butn submit and lat , lang parent show */}
 			{getNameVechiles.length !== 0 ? (
 				<section>
