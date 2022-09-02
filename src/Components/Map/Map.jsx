@@ -1,27 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import L from 'leaflet';
-import { MapContainer, TileLayer } from 'react-leaflet';
 import './style.css';
+import { MapComponent } from '../MapComponent/MapComponent';
 
 export const Map = () => {
 	//------------------------------------------------ ALL STATE THIS COMPONTENT
-	const [lt, setLat] = useState();
-	// console.log('lt', lt);
-	const [lg, setLng] = useState();
-	const [printlatlng, setPrintlatlng] = useState([]);
-	console.log(printlatlng, 'printlatlang');
-	const [showSubmitbtnData, setShowSubmitbtnData] = useState(true);
-	console.log('lat and lng', lg, lt);
+	const serchinpt = useRef();
+	// console.log('lat and lng', lg, lt);
 	const state = useSelector((state) => state);
 	const [TakeMassage, setTakeMassage] = useState();
 	const [getNameVechiles, setGetNameVechiles] = useState([]);
-	const [takeIDVechiles, setTAkeIDVechiles] = useState();
-	const [conditionCheckbox, setConditionCheckbox] = useState();
-	const [Radio, Setradio] = useState();
+	const [query, setQuery] = useState();
+	const [validate, setValidate] = useState('');
+	const [showMessage, setShowMessage] = useState(false);
+	// coming data from slices
 	const data = state.PostingUsers.value.data;
+	const get_Lat_Lng = state.getdata;
+	const { lat, print, lng, showbtn } = get_Lat_Lng.value;
+	// console.log(lat, lng, print, 'showbtn :', showbtn);
 
+	const ShowingSubmitBtn = useSelector(
+		(state) => state.showingbtn.value.showbtn
+	);
 	//
 	let userToken = '92d15c07';
 	// let userToken;
@@ -29,21 +30,20 @@ export const Map = () => {
 		// userToken = state.PostingUsers.value.data.data.userToken;
 	}
 	// console.log('here', getNameVechiles);
-	const dispatch = useDispatch();
 
 	// posting user data
 	const urlUserDAtaPost =
 		'https://exam.pishgamanasia.com/webapi/Request/SendRequest';
 
-	const postinguserDAta = async (lt, lg, id) => {
-		console.log('data lt lg in function', lt, lg);
+	const postinguserDAta = async (lat, lng, id) => {
+		console.log('data lt lg in function', lat, lng);
 
 		try {
 			const resp = await axios.post(urlUserDAtaPost, {
 				userToken: userToken,
 				vehicleUserTypeId: id,
-				source: JSON.stringify(lt),
-				destination: JSON.stringify(lg),
+				source: JSON.stringify(lat),
+				destination: JSON.stringify(lng),
 			});
 			console.log('postinDAta', resp);
 		} catch (error) {
@@ -51,15 +51,29 @@ export const Map = () => {
 		}
 	};
 
-	const [query, setQuery] = useState();
-
 	const SearchQuery = async (e) => {
+		let valid;
+		if (/^\s/.test(e.target.value)) {
+			e.target.value = '';
+			valid = 'لطفا بدون فاصله تایپ کنید';
+		} else if (/[0-9]/.test(e.target.value)) {
+			e.target.value = '';
+			valid = 'عدد وارد نکنید';
+		} else if (e.target.value.match(/^[A-Za-z]+$/)) {
+			e.target.value = '';
+			valid = 'کیبورد خود را فارسی کنید';
+		} else if (e.target.value.length <= 2) {
+			valid = 'مقدار وارد شده باید بیشتر از 2 حرف باشید ';
+		}
 		const queryValue = e.target.value;
 		setQuery(queryValue);
+		setValidate(valid);
 	};
+
 	const HandelerSubmit = async (e) => {
 		e.preventDefault();
-		if (userToken) {
+		if (userToken && !serchinpt.current.value == '') {
+			setShowMessage(true);
 			const resp = await fetch(
 				`https://exam.pishgamanasia.com/webapi/Request/GetVehicleUsers?UserToken=${userToken}&SearchTerm=${query}`
 			);
@@ -67,50 +81,27 @@ export const Map = () => {
 			const getData = await resp.json();
 			setGetNameVechiles(getNameVechiles.concat(getData.data));
 
-			const { message, status } = getData;
+			const { message, status, data } = getData;
 			// console.log('result', message, data, status);
 			setTakeMassage({
-				Message: message,
 				Status: status,
 				VhData: getData.data,
 			});
-		} else {
-			setTakeMassage({
-				Message: 'برای جستجو نیاز به یک کد دارید',
-			});
+
+			if (data.length !== 0) {
+				setTakeMassage({
+					Message: message,
+				});
+				console.log('in the if', TakeMassage.Message);
+			}
 		}
 	};
 
-	//
 	const HandalerSubmitLatLng = (e) => {
 		e.preventDefault();
-		// console.log('id_VH', TakeMassage.VhData[0].id);
-		postinguserDAta(lt, lg, TakeMassage.VhData[0].id);
+		postinguserDAta(lat, lng, TakeMassage.VhData[0].id);
 	};
 
-	//----------------------------------------------------------- Draggable Function Marker map
-
-	//
-
-	let markerlength = 0;
-	let Dimoned = L.icon({
-		iconUrl: '/public/marker1.png',
-		iconSize: [50, 50], // size of the icon
-	});
-	let MArker2 = L.icon({
-		iconUrl: '/public/marker2.png',
-		iconSize: [50, 50], // size of the icon
-	});
-
-	//
-	const CheckBoxHandeler = (e) => {
-		console.log('checkbox', e.target.checked);
-		let checkboxValue = e.target.checked;
-		setConditionCheckbox(e.target.checked);
-		if (conditionCheckbox === true) {
-			console.log('trueeee');
-		}
-	};
 	const CloseVchiles = (id) => {
 		if (getNameVechiles) {
 			let deletingVchiles = getNameVechiles.filter(
@@ -124,6 +115,7 @@ export const Map = () => {
 		window.location.reload();
 	};
 
+	// contorl dublicate map
 	const uniqueIdsVh = [];
 
 	const uniqueVHichels = getNameVechiles.filter((element) => {
@@ -148,16 +140,23 @@ export const Map = () => {
 					id=""
 					placeholder="سرویس خود را سرچ کنید"
 					onChange={SearchQuery}
+					ref={serchinpt}
 				/>
 
 				<button type="submit">Submit</button>
 			</form>
+			{/* validate div */}
+			<div>
+				<h4>{validate}</h4>
+			</div>
+
+			{/* succese massage */}
 			{TakeMassage && (
 				<section>
 					<div>{TakeMassage.Message}</div>
-					<div>{TakeMassage.Status}</div>
 				</section>
 			)}
+			{/* name vechiles maping */}
 			{getNameVechiles &&
 				// [...new Set(array)]
 
@@ -185,89 +184,48 @@ export const Map = () => {
 				})}
 
 			{/*---------------------------------------------------------- Map */}
-			{/* submit lat and lng  */}
-
+	
+			{/* map and butn submit and lat , lang parent show */}
 			{getNameVechiles.length !== 0 ? (
 				<section>
 					<form action="" onSubmit={HandalerSubmitLatLng}>
 						<button
 							type="submit"
-							disabled={showSubmitbtnData}
+							disabled={ShowingSubmitBtn}
 							// disabled={true}
 						>
-							ثبت مبدا و مقصد
+							{ShowingSubmitBtn
+								? 'مبدا و مقصد را مشخص کنید'
+								: 'برای ثبت مسیر کلیک کنید'}
 						</button>
 					</form>
-					<div>
+					{print && (
 						<div>
-							<span>مبدا</span>
-							<span style={{ padding: '2px', margin: '5px' }}>
-								{printlatlng[0]}
-							</span>
+							<div>
+								<span>مبدا</span>
+								<span style={{ padding: '2px', margin: '5px' }}>
+									{print[0]}
+								</span>
 
-							<span style={{ padding: '2px', margin: '5px' }}>
-								{printlatlng[1]}
-							</span>
+								<span style={{ padding: '2px', margin: '5px' }}>
+									{print[1]}
+								</span>
+							</div>
+							<div>
+								<span>مقصد</span>
+								<span style={{ padding: '2px', margin: '5px' }}>
+									{print[2]}
+								</span>
+								<span style={{ padding: '2px', margin: '5px' }}>
+									{print[3]}
+								</span>
+							</div>
 						</div>
-						<div>
-							<span>مقصد</span>
-							<span style={{ padding: '2px', margin: '5px' }}>
-								{printlatlng[2]}
-							</span>
-							<span style={{ padding: '2px', margin: '5px' }}>
-								{printlatlng[3]}
-							</span>
-						</div>
-					</div>
-					<MapContainer
-						whenReady={(map) => {
-							map.target.on('click', function (e) {
-								const { lat, lng } = e.latlng;
+					)}
 
-								markerlength++;
-								// console.log('latlang', lat, lng);
-								if (
-									markerlength === 2 &&
-									getNameVechiles.length !== 0
-								) {
-									setShowSubmitbtnData(!showSubmitbtnData);
-								}
-
-								if (
-									markerlength <= 2 &&
-									getNameVechiles.length !== 0
-								) {
-									L.marker([lat, lng], {
-										draggable: [
-											console.log([lat, lng], true),
-											printlatlng.push(lat, lng),
-										],
-										autoPan: false,
-										icon:
-											markerlength === 1
-												? Dimoned
-												: MArker2,
-									}).addTo(map.target);
-
-									setLat(lat); // in bayd post konam data
-									setLng(lng);
-								}
-								L.marker;
-
-								console.log(markerlength, 'markerlength');
-							});
-
-							// console.log(map);
-						}}
-						center={{ lat: 29.591768, lng: 52.583698 }}
-						zoom={13}
-						scrollWheelZoom={false}
-					>
-						<TileLayer
-							attribution='&copy; <a href="https://map.pishgamanasia.ir">OpenStreetMap</a> contributors'
-							url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-						/>
-					</MapContainer>
+					<MapComponent
+						getNameVechiles={getNameVechiles}
+					></MapComponent>
 				</section>
 			) : (
 				<div>

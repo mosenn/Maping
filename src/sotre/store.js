@@ -1,14 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // import file name
-import data from '../slices/data';
+import showbtnSubmit from '../slices/showbtnSubmit';
 import PostingData from '../slices/getresponse';
-import SearchQueryApi from '../slices/SearchQueryApi';
+import GetData from '../slices/GetData';
 export const store = configureStore({
 	reducer: {
 		// name : file
-		UserData: data,
+		showingbtn: showbtnSubmit,
 		PostingUsers: PostingData,
-		SearchQuery: SearchQueryApi,
+		getdata: GetData,
 	},
 });
