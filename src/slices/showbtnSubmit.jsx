@@ -11,12 +11,15 @@ const DataSlice = createSlice({
 	},
 	reducers: {
 		// functions
-		log: (state) => {
-			state.value.showbtn = !state.value.showbtn;
-			console.log(state, 'hahahahahahahah');
+		ActiveSubmitBtnLatLang: (state) => {
+			if (state.value.showbtn) {
+				state.value.showbtn = false;
+			} else {
+				state.value.showbtn = true;
+			}
 		},
 	},
 });
 
 export default DataSlice.reducer;
-export const { log } = DataSlice.actions;
+export const { ActiveSubmitBtnLatLang } = DataSlice.actions;

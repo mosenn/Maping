@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { GetAlldatafunc } from '../../slices/GetData';
-import { log } from '../../slices/showbtnSubmit';
+import './mapstyle.css';
 
 export const MapComponent = (getNameVechiles) => {
+	// ------------------------------------------ Hooks and State
 	const dispatch = useDispatch();
-	const [lt, setLat] = useState();
-	// console.log('lt', lt);
-	const [lg, setLng] = useState();
 	const [printlatlng, setPrintlatlng] = useState([]);
-	// console.log(printlatlng, 'printlatlang');
-
 	const [showSubmitbtnData, setShowSubmitbtnData] = useState(false);
 
-	const showbtn = useSelector((state) => state.showingbtn.value.showbtn);
-	console.log(showbtn, 'i am here');
 
-	//
+
+	//--- leaflet Icon style
+
 	let markerlength = 0;
 	let Dimoned = L.icon({
 		iconUrl: '/public/marker1.png',
@@ -29,22 +25,20 @@ export const MapComponent = (getNameVechiles) => {
 		iconSize: [50, 50], // size of the icon
 	});
 
+	// ------------------------------ Return Ui
 	return (
-		<div>
+		<div className="ParentMap">
 			<MapContainer
 				whenReady={(map) => {
 					map.target.on('click', function (e) {
 						const { lat, lng } = e.latlng;
 
 						markerlength++;
-						// console.log('latlang', lat, lng);
+
 						if (
 							markerlength === 2 &&
 							getNameVechiles.length !== 0
 						) {
-							console.log('now marker length is 2 ');
-							dispatch(log());
-							console.log(showbtn, 'after marker condition');
 						}
 						if (markerlength <= 2 && getNameVechiles.length !== 0) {
 							L.marker([lat, lng], {
@@ -53,8 +47,6 @@ export const MapComponent = (getNameVechiles) => {
 								icon: markerlength === 1 ? Dimoned : MArker2,
 							}).addTo(map.target);
 
-							setLat(lat); // in bayd post konam data
-							setLng(lng);
 							printlatlng.push(lat, lng);
 							dispatch(
 								GetAlldatafunc({
@@ -66,11 +58,8 @@ export const MapComponent = (getNameVechiles) => {
 							);
 						}
 						L.marker;
-
-						// console.log(markerlength, 'markerlength');
+					
 					});
-
-					// console.log(map);
 				}}
 				center={{ lat: 29.591768, lng: 52.583698 }}
 				zoom={13}

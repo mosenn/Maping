@@ -13,6 +13,9 @@ const GetingAllData = createSlice({
 			state.value = action.payload;
 			console.log(state.value);
 		},
+		ShowPopup: (state, action) => {
+			console.log(action.payload);
+		},
 	},
 });
 

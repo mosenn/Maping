@@ -1,20 +1,18 @@
 const url = 'https://exam.pishgamanasia.com/webapi/Account/Login';
-
-import React, { useEffect, useRef, useState } from 'react';
-import { useFormik } from 'formik';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SendData } from '../../slices/getresponse';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
-
-export const PhoneFrom = () => {
+import homeCss from './home.module.css';
+export const Home = () => {
 	let InpPhoneValue = useRef();
 	const [apiData, SetData] = useState();
 	const [takeValues, SetTakeValues] = useState();
 
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-
+	// --- Take Input Values
 	const TakeValue = (e) => {
 		SetTakeValues({
 			...takeValues,
@@ -22,6 +20,7 @@ export const PhoneFrom = () => {
 		});
 	};
 
+	// --- Submit Form and Posting user
 	const SubmitFunction = async (e) => {
 		e.preventDefault();
 
@@ -43,24 +42,41 @@ export const PhoneFrom = () => {
 			console.log(error);
 		}
 	};
-
+	// --- Return Ui
 	return (
-		<div>
+		<div className={homeCss.homeparent}>
 			<form action="" method="post" onSubmit={SubmitFunction}>
 				<input
 					onChange={TakeValue}
 					type="text"
 					name="username"
 					id=""
-					placeholder="شماره موبایل خود را وارد کنید"
+					placeholder="نام کاربری خود را وارد کنید"
 					ref={InpPhoneValue}
 				/>
-				<input type="text" id="" name="password" onChange={TakeValue} />
+				<input
+					type="text"
+					id=""
+					name="password"
+					onChange={TakeValue}
+					placeholder="رمز عبور خود را وارد کنید"
+				/>
 
-				<label htmlFor="">شماره تلفن من را به خاطر بسپار</label>
-				<button type="submit">submit</button>
-
-				<div> {apiData && apiData.data.message}</div>
+				<button type="submit">
+					به صحفه انتخاب وسیله نقیله وارد شوید
+				</button>
+				{apiData && (
+					<div
+						className={
+							apiData.data.status === 1
+								? homeCss.MassageSucces
+								: homeCss.error
+						}
+					>
+						{' '}
+						{apiData && apiData.data.message}
+					</div>
+				)}
 			</form>
 		</div>
 	);

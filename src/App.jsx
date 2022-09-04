@@ -1,19 +1,18 @@
 import './App.css';
 
-import { PhoneFrom } from './Components/PhoneFrom/PhoneFrom';
-import { Map } from './Components/Map/Map';
+import { RenderMapSearchInput } from './Components/RenderMapAndSerchInput/RenderMapSearchInput';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Home } from './Components/Home/Home';
 function App() {
-
-
 	return (
 		<div className="App">
-
-
 			<BrowserRouter>
 				<Routes>
-					<Route path="/" element={<PhoneFrom></PhoneFrom>}></Route>
-					<Route path="/map" element={<Map />}></Route>
+					<Route path="/" element={<Home></Home>}></Route>
+					<Route
+						path="/map"
+						element={<RenderMapSearchInput />}
+					></Route>
 				</Routes>
 			</BrowserRouter>
 		</div>

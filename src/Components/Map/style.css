@@ -1,7 +1,0 @@
-/* required styles */
-.leaflet-container {
-	overflow: hidden;
-	width: 60vw;
-	height: 60vh;
-	/* background-image: url('/public/marker1.png'); */
-}
